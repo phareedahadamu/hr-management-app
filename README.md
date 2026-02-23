@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+HR Management App – HCMatrix Assessment
 
-## Getting Started
+This repository contains the HR Management App built as part of an assessment for HCMatrix. The application is a modern, responsive HR dashboard that allows management to view employees, search through employee data, and see individual employee details.
 
-First, run the development server:
+The app was implemented following a provided Figma design and integrates with predefined API endpoints for authentication and employee data.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Login / Logout: Secure authentication for HR personnel.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Dashboard: Quick overview of HR metrics (as per Figma design).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+All Employees Table:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Paginated list of employees.
 
-## Learn More
+Search and filter by employee name or ID.
 
-To learn more about Next.js, take a look at the following resources:
+Single Employee Details: View detailed employee information.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Responsive UI: Mobile-first design using Tailwind CSS.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Form Validation: Using react-hook-form + zod for type-safe forms.
 
-## Deploy on Vercel
+Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Framework: Next.js (App Router) + TypeScript
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Styling: Tailwind CSS
+
+Data Fetching & Caching: React Query
+
+Form Handling & Validation: React Hook Form + Zod
+
+API Integration: REST endpoints (provided in assessment)
+
+Available Endpoints
+
+The app integrates with the following endpoints (as per assessment instructions):
+
+Endpoint Method Description
+/api/auth/login POST Authenticate HR user
+/api/v1/logout POST Log out user
+/api/v1/dashboard GET Fetch dashboard metrics
+/api/v1/employee GET Fetch all employees (supports search & pagination)
+/api/v1/employee/:id GET Fetch details of a single employee
+
+All endpoints require Bearer token authentication where applicable.
+
+Form Validation
+
+react-hook-form + zod ensures type-safe form validation.
+
+Example: Login form validates email and password fields with real-time error messages.
+
+State Management & Data Fetching
+
+React Query handles data fetching, caching, and pagination.
+
+Optimistic updates and refetching ensure smooth UX when interacting with employee data.
+
+License
+
+This project is for assessment purposes and is not intended for production use.
