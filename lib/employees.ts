@@ -1,6 +1,9 @@
 "use server";
 import { getSession } from "./auth";
-export async function getAllEmployees(page: number) {
+export async function getAllEmployees(
+  page: number,
+  searchQuery: string | null,
+) {
   try {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     const sessionCookie = await getSession();
@@ -8,7 +11,7 @@ export async function getAllEmployees(page: number) {
       throw new Error("Not Authenticated");
     }
     const session = JSON.parse(sessionCookie);
-    const url = `${appUrl}/api/v1/employee?page=${page}`;
+    const url = `${appUrl}/api/v1/employee?page=${page}&${searchQuery ?? ""}`;
     const result = await fetch(url, {
       method: "GET",
       headers: {
@@ -21,7 +24,6 @@ export async function getAllEmployees(page: number) {
       throw new Error("User not Authenticated");
     }
     const res = await result.json();
-    console.log(res);
     if (!res.success || !res.data) {
       throw new Error("Couldn't retrieve employee list");
     }
@@ -59,7 +61,6 @@ export async function getSingleEmployee(id: number) {
       throw new Error("User not Authenticated");
     }
     const res = await result.json();
-    console.log(res);
     if (!res.success || !res.data) {
       throw new Error("Couldn't retrieve employee's details");
     }
@@ -70,7 +71,9 @@ export async function getSingleEmployee(id: number) {
     };
   } catch (error) {
     const msg =
-      error instanceof Error ? error.message : "Could not fetch employee's details";
+      error instanceof Error
+        ? error.message
+        : "Could not fetch employee's details";
     console.log(error);
     return { success: false, message: msg, data: null };
   }

@@ -29,8 +29,6 @@ export default function LoginForm() {
   const [message, formAction, isPending] = useActionState(login, null);
   const [showMessage, setShowMessage] = useState(false);
 
-  console.log(message);
-
   // Effects
   const displayToast = useEffectEvent(() => {
     setShowMessage(true);

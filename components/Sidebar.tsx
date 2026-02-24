@@ -3,7 +3,12 @@ import { useSession } from "@/lib/provider";
 import { appRoutes } from "@/lib/appRoutes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSidebar } from "@/lib/provider";
+import { useMediaQuery } from "@/lib/hooks";
 export default function Sidebar() {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const sideBarContext = useSidebar();
+  const closeSidebar = sideBarContext ? sideBarContext?.closeSidebar : () => {};
   const session = useSession();
   const pathname = usePathname();
   if (!session || !session.user) return;
@@ -14,6 +19,11 @@ export default function Sidebar() {
       (r.url === "/" ? pathname === r.url : pathname.startsWith(r.url));
     return (
       <Link
+        onClick={() => {
+          if (isMobile) {
+            closeSidebar();
+          }
+        }}
         href={r.url}
         key={index}
         className={`px-4 py-3 text-bt rounded-[10px] items-center flex gap-3 duration-200 transition-colors ${activePath ? "bg-blue-3 text-blue-2" : "text-blue-4 hover:bg-blue-3/25"} ${r.url === "" ? "pointer-events-none" : "pointer-events-auto"}`}
@@ -27,7 +37,7 @@ export default function Sidebar() {
     );
   });
   return (
-    <aside className="border-r-[0.89px] border-r-grey-4 flex flex-col  w-[256px] h-[calc(100dvh-73px)] py-4 justify-between">
+    <aside className="border-r-[0.89px] border-r-grey-4 flex flex-col  w-[256px] h-[calc(100dvh-73px)] py-4 justify-between bg-white">
       <div className="flex flex-col gap-1 px-4 ">{appRoutesComps}</div>
       <div className="flex flex-col w-full px-4 gap-4">
         <hr className="w-full text-grey-4" />

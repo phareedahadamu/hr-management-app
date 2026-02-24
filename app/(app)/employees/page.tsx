@@ -8,9 +8,10 @@ import { getAllEmployees } from "@/lib/employees";
 export default async function EmployeesPage() {
   const queryClient = new QueryClient();
   const page = 1;
+  const searchQuery = null;
   await queryClient.prefetchQuery({
-    queryKey: ["allEmployees", page],
-    queryFn: () => getAllEmployees(page),
+    queryKey: ["allEmployees", page, searchQuery],
+    queryFn: () => getAllEmployees(page, searchQuery),
   });
 
   return (

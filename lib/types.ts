@@ -38,3 +38,10 @@ export type SingleEmployeeDetails = {
   spouse: string;
   start_date: string;
 };
+
+export type DashboardDetails = {
+  total_employees: number;
+  new_hire_count: number;
+  upcoming_event: number;
+  open_positions: number;
+};

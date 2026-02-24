@@ -11,21 +11,46 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getAllEmployees } from "@/lib/employees";
 import { EmployeeDetails } from "@/lib/types";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { exportToCSV } from "@/lib/utils";
 export default function EmployeesPageContent() {
+  // pathname
+  const pathname = usePathname();
+  // searchParams
+  const searchParams = useSearchParams();
+
+  // router
   const router = useRouter();
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(name, value);
+
+      return params.toString();
+    },
+    [searchParams],
+  );
   // States
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchFilter, setSearchFilter] = useState("name");
+  const [search, setSearch] = useState("");
+  const currentPage = searchParams.has("page")
+    ? Number(searchParams.get("page"))
+    : 1;
+  const searchValue = searchParams.get("search");
+  const searchQuery = searchValue
+    ? `${searchValue.split("%")[0]}=${searchValue.split("%")[1]}`
+    : null;
+  // console.log(searchQuery);
   const {
     data: employeesListData,
     isPending,
     error,
   } = useQuery({
-    queryKey: ["allEmployees", currentPage],
-    queryFn: () => getAllEmployees(currentPage),
+    queryKey: ["allEmployees", currentPage, searchQuery],
+    queryFn: () => getAllEmployees(currentPage, searchQuery),
   });
-  //   console.log(employeesListData);
   const employeesList =
     isPending || error
       ? null
@@ -34,59 +59,81 @@ export default function EmployeesPageContent() {
         : (employeesListData?.data.data as EmployeeDetails[]);
 
   // employeesTableRows
-  const tableRows = !employeesList
-    ? null
-    : employeesList.map((item, index) => {
-        const date = new Date(item.start_date.replace(" ", "T"));
+  const tableRows = !employeesList ? null : employeesList.length < 1 ? (
+    <tr>
+      <td colSpan={7} className="text-center">
+        No employee to display
+      </td>
+    </tr>
+  ) : (
+    employeesList.map((item, index) => {
+      const date = new Date(item.start_date.replace(" ", "T"));
 
-        const formattedDate = new Intl.DateTimeFormat("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }).format(date);
-        return (
-          <tr
-            key={index}
-            className="hover:bg-red-500 cursor-pointer"
-            onClick={() => {
-              router.push(`/employees/${item.id}`);
-            }}
-          >
-            <td className="py-2 px-2 border-t-[0.89px]  border-black/10 bg-white">
-              <div className="flex flex-col text-bt ">
-                <p className="font-medium text-blue-2">{item.full_name}</p>
-                <p className="text-grey-2">{item.email}</p>
-              </div>
-            </td>
-            <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
-              {item.job_title}
-            </td>
-            <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
-              {item.department[0].toUpperCase() + item.department.slice(1)}
-            </td>
-            <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
-              {item.location}
-            </td>
-            <td className="py-2 px-2 border-t-[0.89px] border-black/10  text-center text-bt text-blue-1 bg-white">
-              {item.employment_type[0].toUpperCase() +
-                item.employment_type.slice(1)}
-            </td>
-            <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
-              {formattedDate}
-            </td>
-            <td className="py-2 px-2 border-t-[0.89px] last:border-r-[0.89px] border-black/10 text-center bg-white mx-auto">
-              <p
-                className={`text-[12px] w-[131.7px] rounded-full leading-5 ${item.status === "active" ? " text-[#008236] bg-[#008236]/25 border-[0.89px] border-[#008236]/40" : item.status === "leave" ? "text-[#A65F00] bg-[#A65F00]/25 border-[0.89px] border-[#A65F00]/40" : item.status === "onboarding" ? " text-[#1447E6] bg-[#1447E6]/25 border-[0.89px] border-[#1447E6]/40" : "text-[#e61492] bg-[#e61492]/25 border-[0.89px] border-[#e61492]/40"}`}
-              >
-                {item.status[0].toUpperCase() + item.status.slice(1)}
-              </p>
-            </td>
-          </tr>
-        );
-      });
+      const formattedDate = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+      return (
+        <tr
+          key={index}
+          className="hover:bg-red-500 cursor-pointer"
+          onClick={() => {
+            router.push(`/employees/${item.id}`);
+          }}
+        >
+          <td className="py-2 px-2 border-t-[0.89px]  border-black/10 bg-white">
+            <div className="flex flex-col text-bt ">
+              <p className="font-medium text-blue-2">{item.full_name}</p>
+              <p className="text-grey-2">{item.email}</p>
+            </div>
+          </td>
+          <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
+            {item.job_title}
+          </td>
+          <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
+            {item.department[0].toUpperCase() + item.department.slice(1)}
+          </td>
+          <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
+            {item.location}
+          </td>
+          <td className="py-2 px-2 border-t-[0.89px] border-black/10  text-center text-bt text-blue-1 bg-white">
+            {item.employment_type[0].toUpperCase() +
+              item.employment_type.slice(1)}
+          </td>
+          <td className="py-2 px-2 border-t-[0.89px]  border-black/10 text-center text-bt text-blue-1 bg-white">
+            {formattedDate}
+          </td>
+          <td className="py-2 px-2 border-t-[0.89px] last:border-r-[0.89px] border-black/10 text-center bg-white">
+            <p
+              className={`text-[12px] w-[131.7px] rounded-full leading-5 ${item.status === "active" ? " text-[#008236] bg-[#008236]/25 border-[0.89px] border-[#008236]/40" : item.status === "leave" ? "text-[#A65F00] bg-[#A65F00]/25 border-[0.89px] border-[#A65F00]/40" : item.status === "onboarding" ? " text-[#1447E6] bg-[#1447E6]/25 border-[0.89px] border-[#1447E6]/40" : "text-[#e61492] bg-[#e61492]/25 border-[0.89px] border-[#e61492]/40"} mx-auto`}
+            >
+              {item.status[0].toUpperCase() + item.status.slice(1)}
+            </p>
+          </td>
+        </tr>
+      );
+    })
+  );
+
+  // search filter
+  const filterValues = [
+    { name: "Name", value: "name" },
+    { name: "Email", value: "email" },
+    { name: "Job title", value: "job_title" },
+    { name: "Department", value: "department" },
+    { name: "Employment type", value: "employment_type" },
+    { name: "Status", value: "status" },
+    { name: "Location", value: "location" },
+  ];
+  const searchFilterComponent = filterValues.map((val, index) => (
+    <option key={index} value={val.value}>
+      {"By " + val.name}
+    </option>
+  ));
   return (
-    <section className="flex flex-col lg:p-8 p-4  w-full bg-grey-6 gap-6 items-center">
-      <header className="w-full lg:flex-row flex flex-col  lg:justify-between justify-start gap-4">
+    <section className="flex flex-col md:p-8 p-4  w-full bg-grey-6 gap-6 items-center min-h-[calc(100dvh-73px)]">
+      <header className="w-full md:flex-row flex flex-col  md:justify-between justify-start gap-4">
         <div className="flex flex-col gap-1 ">
           <p className="font-bold text-grey-1 text-[30px]">Employees</p>
           <p className="text-blue-1">
@@ -101,23 +148,63 @@ export default function EmployeesPageContent() {
           Add New Employee
         </Link>
       </header>
-      <div className="flex w-full justify-between">
-        <form className="max-w-123.75 w-full flex relative">
+      <div className="flex w-full justify-between md:flex-row md:gap-0 flex-col gap-4">
+        <form
+          className="max-w-123.75 w-full flex"
+          onSubmit={(e) => {
+            e.preventDefault();
+            router.push(`${pathname}?search=${searchFilter}%${search}`);
+          }}
+        >
           <input
             type="search"
+            name="search"
             placeholder="Search by name, email, title, or department..."
-            className="h-9 py-1 rounded-lg bg-white border-[0.89px] border-grey-4  pl-10 pr-4 focus:outline-blue-2/25 w-full"
+            className="h-9 py-1 rounded-l-lg bg-white border-[0.89px] border-black/10 border-l-[0.89px] px-2.5 focus:outline-blue-2/25 w-full"
+            value={search}
+            onChange={(e) => {
+              const value = e.currentTarget.value;
+              setSearch(value);
+            }}
           />
-          <Search
-            size={20}
-            className="text-grey-2 absolute top-[50%] left-3 -translate-y-[50%]"
-          />
+          <select
+            className="bg-white text-bt border-black/10   border-y-[0.89px] px-1.5 text-blue-1"
+            value={searchFilter}
+            onChange={(e) => {
+              const val = e.currentTarget.value;
+              setSearchFilter(val);
+            }}
+          >
+            {searchFilterComponent}
+          </select>
+          <button
+            className="border-[0.89px]  border-black/10 rounded-r-lg  border-y-[0.89px] px-2 cursor-pointer bg-white hover:border-black/25 duration-200 transition-colors"
+            type="submit"
+          >
+            <Search size={20} className="text-grey-2" />
+          </button>
         </form>
-        <button className="flex gap-4 text-grey-1 border-[0.89px] border-black/10 rounded-lg items-center h-9 px-3 cursor-pointer disabled:cursor-not-allowed not-disabled:hover:border-grey-2 duration-200 transition-colors">
+
+        <button
+          className=" text-center w-fit flex gap-4 text-grey-1 border-[0.89px] border-black/10 rounded-lg items-center h-9 px-3 cursor-pointer disabled:cursor-not-allowed not-disabled:hover:border-grey-2 duration-200 transition-colors"
+          type="button"
+          disabled={
+            isPending ||
+            !employeesListData ||
+            !employeesListData.success ||
+            !employeesList ||
+            employeesList?.length < 1
+          }
+          onClick={() => {
+            if (!employeesList) return;
+            exportToCSV(employeesList);
+          }}
+        >
           <Download size={16} />
           Export to CSV
         </button>
       </div>
+
       {isPending ? (
         <Loader2 size={24} className="animate-spin text-blue-2" />
       ) : error ? (
@@ -126,7 +213,7 @@ export default function EmployeesPageContent() {
         <p className="w-full text-center">{employeesListData.message}</p>
       ) : (
         <div className="w-full flex flex-col gap-6 items-center">
-          <div className="flec w-full overflow-hidden rounded-lg border-[0.89px] border-black/10">
+          <div className="flec w-full md:overflow-hidden overflow-auto rounded-lg border-[0.89px] border-black/10">
             <table className="w-full">
               <thead>
                 <tr>
@@ -164,26 +251,18 @@ export default function EmployeesPageContent() {
               </span>
             </p>
             <div className="flex gap-2">
-              <button
-                className="px-4 py-2.5 rounded-lg border-[0.89px] border-black/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 not-disabled:hover:border-black/30 duration-200 transition-colors"
-                disabled={isPending || currentPage === 1}
-                onClick={() => {
-                  setCurrentPage((prev) => prev - 1);
-                }}
+              <Link
+                className={`px-4 py-2.5 rounded-lg border-[0.89px] border-black/10  hover:border-black/30 duration-200 transition-colors ${currentPage === 1 ? "pointer-events-none opacity-70" : "pointer-event-auto"}`}
+                href={`${pathname}?${createQueryString("page", String(currentPage - 1))}`}
               >
                 <ChevronLeft size={16} className="text-grey-2" />
-              </button>
-              <button
-                className="px-4 py-2.5 rounded-lg border-[0.89px] border-black/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 not-disabled:hover:border-black/30 duration-200 transition-colors"
-                disabled={
-                  isPending || currentPage === employeesListData.data.last_page
-                }
-                onClick={() => {
-                  setCurrentPage((prev) => prev + 1);
-                }}
+              </Link>
+              <Link
+                className={`px-4 py-2.5 rounded-lg border-[0.89px] border-black/10  hover:border-black/30 duration-200 transition-colors ${currentPage === employeesListData.data.last_page ? "pointer-events-none opacity-70" : "pointer-event-auto"}`}
+                href={`${pathname}?${createQueryString("page", String(currentPage + 1))}`}
               >
                 <ChevronRight size={16} className="text-grey-2" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>

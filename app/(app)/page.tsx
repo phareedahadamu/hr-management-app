@@ -1,8 +1,19 @@
-"use client";
-import { useSession } from "@/lib/provider";
-export default function DashboardPage() {
-  const session = useSession();
-  if (!session || !session.user) return;
-
-  return <div>{`Hello ${session?.user.name}`}</div>;
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { getdashboardDetails } from "@/lib/dashboard";
+import DashboardContent from "@/components/DashboardContent";
+export default async function DashboardPage() {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: ["dashboard"],
+    queryFn: getdashboardDetails,
+  });
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <DashboardContent />
+    </HydrationBoundary>
+  );
 }

@@ -9,7 +9,6 @@ export async function GET() {
       throw new Error("Not Authenticated");
     }
     const session = JSON.parse(sessionCookie);
-    console.log("Session", session);
     const result = await fetch(`${appUrl}/api/v1/employee`, {
       method: "GET",
       headers: {
@@ -19,7 +18,6 @@ export async function GET() {
     });
 
     const data = result.json();
-    console.log(data);
     return NextResponse.json(
       {
         success: true,
@@ -29,7 +27,7 @@ export async function GET() {
       { status: 200 },
     );
   } catch (error) {
-    console.error("GET employees error:", error);
+    console.log("GET employees error:", error);
 
     return NextResponse.json(
       { success: false, message: "Failed to fetch users", data: null },

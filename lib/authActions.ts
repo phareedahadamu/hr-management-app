@@ -17,7 +17,6 @@ export async function login(
     if (!res.data || !res.success) {
       throw new Error(res.message);
     }
-    console.log("Login----", res);
     return { success: true, message: "Login Successful" };
   } catch (error) {
     console.log("Login Error", error);

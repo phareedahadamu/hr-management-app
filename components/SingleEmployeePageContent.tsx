@@ -30,7 +30,6 @@ export default function SingleEmployeePageContent({ id }: { id: number }) {
     : !employeeDetailsData.success
       ? null
       : (employeeDetailsData.data as SingleEmployeeDetails);
-  console.log(employeeDetailsData);
 
   const tenureTime = employeeDetails
     ? timeElapsed(employeeDetails?.start_date)
@@ -51,7 +50,7 @@ export default function SingleEmployeePageContent({ id }: { id: number }) {
       <div className="w-full flex flex-col gap-7.5">
         <p>Personal Information</p>
         <div className="w-full flex flex-col gap-6">
-          <div className="w-full grid lg:grid-cols-5 grid-cols-1 justify-between gap-3 lg:gap-4">
+          <div className="w-full grid lg:grid-cols-5 grid-cols-1 md:grid-cols-2 justify-between gap-3 lg:gap-4">
             <div className="flex flex-col gap-1.5">
               <p className="text-bt text-blue-4">Email</p>
               <p className="text-grey-1">-</p>
@@ -179,7 +178,7 @@ export default function SingleEmployeePageContent({ id }: { id: number }) {
   )?.component;
 
   return (
-    <section className="flex flex-col lg:p-8 p-4  w-full bg-grey-6 gap-6 items-center">
+    <section className="flex flex-col md:p-8 p-4  w-full bg-grey-6 gap-6 items-center min-h-[calc(100dvh-73px)]">
       <button
         className="flex text-grey-1 gap-4.25 text-bt w-full justify-start cursor-pointer hover:text-grey-2 duration-200 transition-colors items-center"
         onClick={() => {

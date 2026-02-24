@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import SessionProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
+import ResponsiveSideBar from "@/components/ResponsiveSideBar";
+import { SidebarProvider } from "@/components/SideBarProvider";
 
 export default async function AppLayout({
   children,
@@ -17,13 +18,15 @@ export default async function AppLayout({
   const session = JSON.parse(sessionCookie);
   return (
     <SessionProvider session={session}>
-      <div className="w-full flex flex-col">
-        <Header />
-        <div className="flex">
-          <Sidebar />
-          {children}
+      <SidebarProvider>
+        <div className="w-full flex flex-col">
+          <Header />
+          <div className="flex items-start">
+            <ResponsiveSideBar />
+            {children}
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     </SessionProvider>
   );
 }
