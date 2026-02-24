@@ -16,7 +16,7 @@ export default function Header() {
   if (!session || !session.user) return;
 
   return (
-    <nav className="flex w-full justify-between items-center md:px-8 px-4 h-18.25 border-b-[0.89px] border-b-grey-4">
+    <nav className="flex w-full justify-between items-center md:px-8 px-4 h-18.25 border-b-[0.89px] border-b-grey-4 bg-white">
       <Image src="/logo.png" width={162} height={38} alt="logo" />
       <div className="flex md:gap-4 gap-2">
         <button

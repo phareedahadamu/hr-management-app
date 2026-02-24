@@ -5,7 +5,7 @@ export async function getdashboardDetails() {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     const sessionCookie = await getSession();
     if (!sessionCookie) {
-      throw new Error("Not Authenticated");
+      throw new Error("Not Authenticated. Logout and try againlo");
     }
     const session = JSON.parse(sessionCookie);
     const url = `${appUrl}/api/v1/dashboard`;
@@ -18,7 +18,7 @@ export async function getdashboardDetails() {
     const contentType = result.headers.get("content-type") || "";
 
     if (!contentType.includes("application/json")) {
-      throw new Error("User not Authenticated");
+      throw new Error("User not Authenticated. Logout and try again");
     }
     const res = await result.json();
     console.log("Response-------", res);

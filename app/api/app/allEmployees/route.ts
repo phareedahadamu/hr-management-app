@@ -6,7 +6,7 @@ export async function GET() {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     const sessionCookie = await getSession();
     if (!sessionCookie) {
-      throw new Error("Not Authenticated");
+      throw new Error("Not Authenticated. Logout and try again.");
     }
     const session = JSON.parse(sessionCookie);
     const result = await fetch(`${appUrl}/api/v1/employee`, {

@@ -21,7 +21,7 @@ export default async function AppLayout({
       <SidebarProvider>
         <div className="w-full flex flex-col">
           <Header />
-          <div className="flex items-start">
+          <div className="flex items-start bg-grey-6">
             <ResponsiveSideBar />
             {children}
           </div>
